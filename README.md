@@ -1,16 +1,16 @@
-# 🛡️ AdGuard Exporter for Prometheus
+# AdGuard Exporter for Prometheus
 
 A lightweight Prometheus exporter written in Go that exposes detailed metrics from your AdGuard Home instance — including DNS statistics, blocked domains, upstreams, and client data.
 
 ---
 
-## 🚀 Features
+## Features
 
-- 🔒 Authenticated access to AdGuard Home API
-- 📊 Rich metrics: total queries, blocked queries, upstream stats, per-client stats
-- 🧠 Supports `/control/status` & `/control/stats` endpoints
-- 🔁 Customizable scrape interval
-- 📦 Lightweight single binary or Docker container
+- Authenticated access to AdGuard Home API
+- Rich metrics: total queries, blocked queries, upstream stats, per-client stats
+- Supports `/control/status`, `/control/stats` & `control/querylog` endpoints
+- Customizable scrape interval
+- Lightweight single binary or Docker container
 
 ---
 
