@@ -50,7 +50,7 @@ curl -v -u <yourusername>:<yourpassword> <ADGUARD_URL>:<PORT>/control/querylog
 ---
 
 ---
-## ⚙️ Environment Variables
+## Environment Variables
 
 | Variable         | Description                            | Required | Example                      |
 |------------------|----------------------------------------|----------|------------------------------|
