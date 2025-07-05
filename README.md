@@ -8,28 +8,31 @@ A lightweight Prometheus exporter written in Go that exposes detailed metrics fr
 
 - Authenticated access to AdGuard Home API
 - Rich metrics: total queries, blocked queries, upstream stats, per-client stats
-- Supports `/control/status`, `/control/stats` & `control/querylog` endpoints
+- Supported endpoints
+   - `/control/status`
+   - `/control/stats`
+   - `/control/querylog`
 - Customizable scrape interval
 - Lightweight single binary or Docker container
 
 ---
 
-## 🏗️ Built With
+## Built With
 
 - [Go (Golang)](https://golang.org/)
 - [Prometheus Client Library](https://github.com/prometheus/client_golang)
 - [AdGuard Home](https://github.com/AdguardTeam/AdGuardHome)
 
 ---
-## ✅ Prerequisites
+## Prerequisites
 
 Before running this exporter, make sure:
 
-- 🛡️ AdGuard Home is up and running
-- 🔐 You have a valid AdGuard username & password
-- 📡 Prometheus is configured to scrape this exporter
-- 🐳 Docker installed (or alternatively Go 1.20+ for building from source)
-- 🔓 Port `9600` is available on your system
+- AdGuard Home is up and running
+- You have a valid AdGuard username & password
+- Prometheus is configured to scrape this exporter
+- Docker installed (or alternatively Go 1.20+ for building from source)
+- Port `9617` is available on your system
 
 To make sure the endpoint is valid, you can check the endpoints via curl
 
@@ -60,9 +63,9 @@ curl -v -u yourusername:yourpassword <ADGUARD_URL>:PORT/control/querylog
 
 ---
 
-## 🐳 Run via Docker
+## Run via Docker
 
-### ▶️ Quick Start (Inline ENV)
+### Quick Start (Inline ENV)
 
 ```bash
 docker run -d \
@@ -80,7 +83,7 @@ docker run -d \
 
 ---
 
-## 📦 Run via Docker Compose
+## Run via Docker Compose
 
 ### 1. Create docker-compose.yml in your root dir
 
@@ -110,7 +113,7 @@ docker-compose up -d
 
 ---
 
-## 🧪 Metrics Endpoint
+## Metrics Endpoint
 
 Once running, your exporter will be available at:
 
@@ -118,11 +121,11 @@ Once running, your exporter will be available at:
 http://<host>:9200/metrics
 ```
 
-✅ Ready to scrape by Prometheus!
+Ready to scrape by Prometheus!
 
 ---
 
-## 📈 Example Prometheus Job
+## Example Prometheus Job
 
 ```yaml
 - job_name: 'adguard-exporter'
@@ -131,7 +134,7 @@ http://<host>:9200/metrics
     - targets: ['adguard-exporter:9200']
 ```
 ---
-## 📊 Available Prometheus Metrics
+## Available Prometheus Metrics
 This exporter exposes the following metrics from AdGuard Home:
 
 - `adguard_protection_enabled`: Whether DNS filtering is enabled
@@ -154,13 +157,13 @@ Metrics with labels:
 ---
 ---
 
-## 📃 License
+## License
 
 This project is licensed under the MIT License — see the [LICENSE](LICENSE) file for details.
 
 ---
 
-## ✨ Screenshots
+## Screenshots
 
 Grafana Dashboard Preview
 
