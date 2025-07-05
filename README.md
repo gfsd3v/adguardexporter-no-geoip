@@ -37,9 +37,9 @@ Before running this exporter, make sure:
 To make sure the endpoint is valid, you can check the endpoints via curl
 
 ```
-curl -v -u yourusername:yourpassword <ADGUARD_URL>:PORT/control/stats
-curl -v -u yourusername:yourpassword <ADGUARD_URL>:PORT/control/status
-curl -v -u yourusername:yourpassword <ADGUARD_URL>:PORT/control/querylog
+curl -v -u <yourusername>:<yourpassword> <ADGUARD_URL>:<PORT>/control/stats
+curl -v -u <yourusername>:<yourpassword> <ADGUARD_URL>:<PORT>/control/status
+curl -v -u <yourusername>:<yourpassword> <ADGUARD_URL>:<PORT>/control/querylog
 ```
 ---
 ![Stats](./assets/checking_stats_endpoint.png)
@@ -71,11 +71,11 @@ curl -v -u yourusername:yourpassword <ADGUARD_URL>:PORT/control/querylog
 docker run -d \
   --name adguard_exporter \
   --restart unless-stopped \
-  -p 9200:9200 \
+  -p 9617:9617 \
   -e ADGUARD_HOST=http://192.168.18.1 \
   -e ADGUARD_USER=admin \
   -e ADGUARD_PASS=mysecretpassword \
-  -e EXPORTER_PORT=9200 \
+  -e EXPORTER_PORT=9617 \
   -e SCRAPE_INTERVAL=15s \
   -e LOG_LEVEL=DEBUG
   znanddev/adguard-exporter:latest
@@ -96,12 +96,12 @@ services:
     container_name: adguard_exporter
     restart: unless-stopped
     ports:
-      - "9200:9200"
+      - "9617:9617"
     environment:
       - ADGUARD_URL=http://192.168.18.1
       - ADGUARD_USERNAME=admin
       - ADGUARD_PASSWORD=admin
-      - EXPORTER_PORT=9200
+      - EXPORTER_PORT=9617
       - SCRAPE_INTERVAL=15s
 ```
 
@@ -118,7 +118,7 @@ docker-compose up -d
 Once running, your exporter will be available at:
 
 ```
-http://<host>:9200/metrics
+http://<host>:9617/metrics
 ```
 
 Ready to scrape by Prometheus!
@@ -131,7 +131,7 @@ Ready to scrape by Prometheus!
 - job_name: 'adguard-exporter'
   scrape_interval: 15s
   static_configs:
-    - targets: ['adguard-exporter:9200']
+    - targets: ['adguard-exporter:9617']
 ```
 ---
 ## Available Prometheus Metrics
