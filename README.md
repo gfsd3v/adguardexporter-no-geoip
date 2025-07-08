@@ -65,12 +65,6 @@ After that, you should got the output like this:
 ```
 
 ---
-![Stats](./assets/checking_stats_endpoint.png)
----
-![Status](./assets/checking_status_endpoint.png)
----
-![QueryLog](./assets/checking_querylog_endpoint.png)
----
 
 ---
 ## Environment Variables
