@@ -1,5 +1,5 @@
 # Binaries
-adguard-exporter
+adguardexporter
 dist/
 # Env file
 .env

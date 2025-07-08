@@ -1,4 +1,4 @@
-module github.com/yourusername/adguard-exporter
+module github.com/znand-dev/adguardexporter
 
 go 1.22
 
