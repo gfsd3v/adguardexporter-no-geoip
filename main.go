@@ -194,7 +194,12 @@ func fetchStats() (*AdGuardStats, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() {
+            if err := resp.Body.Close(); err != nil {
+                log.Printf("failed to close response body: %v", err)
+            }
+        }()
+
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
@@ -224,7 +229,11 @@ func fetchStatus() (*AdGuardStatus, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() {
+            if err := resp.Body.Close(); err != nil {
+                log.Printf("failed to close response body: %v", err)
+            }
+        }()
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
@@ -254,7 +263,11 @@ func fetchQueryLog() (*AdGuardQueryLog, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() {
+            if err := resp.Body.Close(); err != nil {
+                log.Printf("failed to close response body: %v", err)
+            }
+        }()
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
