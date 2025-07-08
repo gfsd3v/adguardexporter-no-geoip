@@ -41,6 +41,29 @@ curl -v -u <yourusername>:<yourpassword> <ADGUARD_URL>:<PORT>/control/stats
 curl -v -u <yourusername>:<yourpassword> <ADGUARD_URL>:<PORT>/control/status
 curl -v -u <yourusername>:<yourpassword> <ADGUARD_URL>:<PORT>/control/querylog
 ```
+After that, you should got the output like this:
+
+```
+*   Trying 172.31.20.12:80...
+* Connected to 172.31.20.12 (172.31.20.12) port 80 (#0)
+* Server auth using Basic with user 'admin'
+> GET /control/stats HTTP/1.1
+> Host: 172.31.20.12
+> Authorization: Basic Xxxxxxxxxxxxxxxxxxxxxxxxx
+> User-Agent: curl/7.88.1
+> Accept: */*
+> 
+< HTTP/1.1 200 OK
+< Access-Control-Allow-Origin: http://172.31.20.12
+< Content-Type: application/json
+< Server: AdGuardHome/v0.107.62
+< Vary: Origin
+< Vary: Accept-Encoding
+< Date: Tue, 08 Jul 2025 16:45:56 GMT
+< Transfer-Encoding: chunked
+<
+```
+
 ---
 ![Stats](./assets/checking_stats_endpoint.png)
 ---
