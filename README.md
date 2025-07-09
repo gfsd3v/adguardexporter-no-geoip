@@ -89,9 +89,9 @@ docker run -d \
   --name adguard_exporter \
   --restart unless-stopped \
   -p 9617:9617 \
-  -e ADGUARD_HOST=http://192.168.18.1 \
-  -e ADGUARD_USER=admin \
-  -e ADGUARD_PASS=mysecretpassword \
+  -e ADGUARD_HOST=<YOUR_ADGUARD_URL> \
+  -e ADGUARD_USER=<YOUR_ADGUARD_USERNAME> \
+  -e ADGUARD_PASS=<YOUR_ADGUARD_PASSWORD> \
   -e EXPORTER_PORT=9617 \
   -e SCRAPE_INTERVAL=15s \
   -e LOG_LEVEL=DEBUG
@@ -115,11 +115,12 @@ services:
     ports:
       - "9617:9617"
     environment:
-      - ADGUARD_URL=http://192.168.18.1
-      - ADGUARD_USERNAME=admin
-      - ADGUARD_PASSWORD=admin
+      - ADGUARD_HOST=<YOUR_ADGUARD_URL>
+      - ADGUARD_USER=<YOUR_ADGUARD_USERNAME>
+      - ADGUARD_PASS=<YOUR_ADGUARD_PASSWORD>
       - EXPORTER_PORT=9617
       - SCRAPE_INTERVAL=15s
+      - LOG_LEVEL=DEBUG
 ```
 
 ### 2. Run with Docker Compose
