@@ -7,13 +7,23 @@ A lightweight Prometheus exporter written in Go that exposes detailed metrics fr
 ## Features
 
 - Authenticated access to AdGuard Home API
-- Rich metrics: total queries, blocked queries, upstream stats, per-client stats
-- Supported endpoints
-   - `/control/status`
-   - `/control/stats`
-   - `/control/querylog`
+- Prometheus-compatible metrics exporter
+- Rich DNS analytics:
+  - total queries
+  - blocked queries
+  - upstream DNS statistics
+  - per-client query statistics
+- Query log analysis from AdGuard Home
+- GeoIP enrichment using MaxMind GeoLite2 database
+- Geographic DNS client visualization (Grafana Geomap)
+- DNS threat map for blocked queries
+- Supported endpoints:
+  - `/control/status`
+  - `/control/stats`
+  - `/control/querylog`
 - Customizable scrape interval
-- Lightweight single binary or Docker container
+- Lightweight single binary
+- Docker-friendly deployment
 
 ---
 
@@ -153,26 +163,79 @@ Ready to scrape by Prometheus!
 ```
 ---
 ## Available Prometheus Metrics
-This exporter exposes the following metrics from AdGuard Home:
 
-- `adguard_protection_enabled`: Whether DNS filtering is enabled
-- `adguard_running`: Whether AdGuard Home is running
-- `adguard_queries`: Total DNS queries in the last 24 hours
-- `adguard_blocked_filtered`: Queries blocked by filter lists
-- `adguard_blocked_safesearch`: Queries blocked due to SafeSearch
-- `adguard_blocked_safebrowsing`: Queries blocked due to SafeBrowsing
-- `adguard_avg_processing_time_seconds`: Average DNS query processing time in seconds
-- `adguard_scrape_errors_total`: Total number of scrape errors
-- `adguard_dhcp_enabled`: Whether DHCP server is enabled
-- `adguard_dhcp_leases`: Number of active DHCP leases
+This exporter exposes the following metrics from AdGuard Home.
+
+### Core Metrics
+
+- `adguard_dns_queries_total`  
+  Total DNS queries processed by AdGuard Home.
+
+- `adguard_blocked_filtering_total`  
+  Total DNS queries blocked by filtering rules.
+
+- `adguard_replaced_parental`  
+  Queries replaced by parental filtering.
+
+- `adguard_avg_processing_time`  
+  Average DNS query processing time in milliseconds.
+
+### AdGuard Status
+
+- `adguard_protection_enabled`  
+  Whether DNS filtering protection is enabled (1 = enabled, 0 = disabled).
+
+- `adguard_running`  
+  Whether the AdGuard Home DNS service is running.
+
+- `adguard_dhcp_available`  
+  Indicates if DHCP functionality is available.
+
+- `adguard_protection_disabled_duration_seconds`  
+  Time since DNS protection was disabled.
+
+### Top Queries
 
 Metrics with labels:
-- `adguard_top_queried_domains{domain="example.com"}`
-- `adguard_top_blocked_domains{domain="ads.example.com"}`
-- `adguard_top_clients{client="192.168.1.2"}`
-- `adguard_top_upstreams{upstream="8.8.8.8"}`
-- `adguard_top_upstreams_avg_response_time_seconds{upstream="8.8.8.8"}`
----
+
+- `adguard_top_queried_domain_total{domain="example.com"}`
+- `adguard_top_blocked_domain_total{domain="ads.example.com"}`
+- `adguard_top_client_total{client="192.168.1.2"}`
+- `adguard_top_upstream_total{upstream="8.8.8.8"}`
+- `adguard_upstream_avg_response_time_seconds{upstream="8.8.8.8"}`
+
+### GeoIP Metrics (New!)
+- `adguard_client_geo_queries`
+  Total DNS queries per client enriched with geographic information.
+
+  Labels:
+  `client` – Client IP address
+  
+  `country` – ISO country code
+  
+  `lat` – Latitude
+  
+  `lon` – Longitude
+
+  Example:
+  `adguard_client_geo_queries{client="118.99.94.204",country="ID",lat="-2.969000",lon="104.744200"} 1000`
+
+- `adguard_blocked_geo_queries`
+
+  Counts DNS queries that were blocked by filtering rules and enriches them with geographic information.
+
+   Labels:
+
+  `client`
+  
+  `country`
+  
+  `lat`
+  
+  `lon`
+
+  Example:
+  `adguard_blocked_geo_queries{client="118.99.94.204",country="ID",lat="-2.969000",lon="104.744200"} 306`
 ---
 
 ## License
