@@ -166,76 +166,146 @@ Ready to scrape by Prometheus!
 
 This exporter exposes the following metrics from AdGuard Home.
 
+---
+
 ### Core Metrics
 
-- `adguard_dns_queries_total`  
+* `adguard_dns_queries_total`
   Total DNS queries processed by AdGuard Home.
 
-- `adguard_blocked_filtering_total`  
+* `adguard_blocked_filtering_total`
   Total DNS queries blocked by filtering rules.
 
-- `adguard_replaced_parental`  
+* `adguard_replaced_parental`
   Queries replaced by parental filtering.
 
-- `adguard_avg_processing_time`  
+* `adguard_avg_processing_time`
   Average DNS query processing time in milliseconds.
+
+---
 
 ### AdGuard Status
 
-- `adguard_protection_enabled`  
+* `adguard_protection_enabled`
   Whether DNS filtering protection is enabled (1 = enabled, 0 = disabled).
 
-- `adguard_running`  
+* `adguard_running`
   Whether the AdGuard Home DNS service is running.
 
-- `adguard_dhcp_available`  
+* `adguard_dhcp_available`
   Indicates if DHCP functionality is available.
 
-- `adguard_protection_disabled_duration_seconds`  
+* `adguard_protection_disabled_duration_seconds`
   Time since DNS protection was disabled.
+
+---
 
 ### Top Queries
 
 Metrics with labels:
 
-- `adguard_top_queried_domain_total{domain="example.com"}`
-- `adguard_top_blocked_domain_total{domain="ads.example.com"}`
-- `adguard_top_client_total{client="192.168.1.2"}`
-- `adguard_top_upstream_total{upstream="8.8.8.8"}`
-- `adguard_upstream_avg_response_time_seconds{upstream="8.8.8.8"}`
+* `adguard_top_queried_domain_total{domain="example.com"}`
+* `adguard_top_blocked_domain_total{domain="ads.example.com"}`
+* `adguard_top_client_total{client="192.168.1.2"}`
+* `adguard_top_upstream_total{upstream="8.8.8.8"}`
+* `adguard_upstream_avg_response_time_seconds{upstream="8.8.8.8"}`
 
-### GeoIP Metrics (New!)
-- `adguard_client_geo_queries`
-  Total DNS queries per client enriched with geographic information.
+---
 
-  Labels:
-  `client` – Client IP address
-  
-  `country` – ISO country code
-  
-  `lat` – Latitude
-  
-  `lon` – Longitude
+### Query Log Metrics
 
-  Example:
-  `adguard_client_geo_queries{client="118.99.94.204",country="ID",lat="-2.969000",lon="104.744200"} 1000`
+Metrics generated from AdGuard query log analysis.
 
-- `adguard_blocked_geo_queries`
+* `adguard_query_domain_total{domain="example.com"}`
+* `adguard_query_reason_total{reason="FilteredBlackList"}`
+* `adguard_query_type_total{type="A"}`
+* `adguard_query_upstream_total{upstream="8.8.8.8"}`
+* `adguard_query_client_reason_total{client="192.168.1.10",reason="FilteredBlackList"}`
 
-  Counts DNS queries that were blocked by filtering rules and enriches them with geographic information.
+---
 
-   Labels:
+### Upstream Latency Metrics
 
-  `client`
-  
-  `country`
-  
-  `lat`
-  
-  `lon`
+Histogram metrics that track DNS upstream response time distribution.
 
-  Example:
-  `adguard_blocked_geo_queries{client="118.99.94.204",country="ID",lat="-2.969000",lon="104.744200"} 306`
+* `adguard_upstream_latency_seconds`
+
+This metric allows latency percentile calculations such as **p95 or p99 upstream DNS latency**.
+
+Generated metrics:
+
+* `adguard_upstream_latency_seconds_bucket`
+* `adguard_upstream_latency_seconds_sum`
+* `adguard_upstream_latency_seconds_count`
+
+Example:
+
+```
+adguard_upstream_latency_seconds_bucket{upstream="1.1.1.1",le="0.005"} 50
+```
+
+---
+
+### GeoIP Metrics
+
+#### `adguard_client_geo_queries`
+
+Total DNS queries per client enriched with geographic information.
+
+Labels:
+
+* `client` – Client IP address
+* `country` – ISO country code
+* `lat` – Latitude
+* `lon` – Longitude
+
+Example:
+
+```
+adguard_client_geo_queries{client="118.99.94.204",country="ID",lat="-2.969000",lon="104.744200"} 1000
+```
+
+---
+
+#### `adguard_blocked_geo_queries`
+
+Counts DNS queries that were blocked by filtering rules and enriches them with geographic information.
+
+Labels:
+
+* `client`
+* `country`
+* `lat`
+* `lon`
+
+Example:
+
+```
+adguard_blocked_geo_queries{client="118.99.94.204",country="ID",lat="-2.969000",lon="104.744200"} 306
+```
+
+---
+
+### Exporter Health Metrics
+
+Metrics used to monitor the exporter itself.
+
+* `adguard_exporter_up`
+  Indicates if the exporter successfully scraped the AdGuard API.
+
+* `adguard_exporter_scrape_duration_seconds`
+  Time taken for the exporter to scrape AdGuard API data.
+
+* `adguard_exporter_scrape_errors_total`
+  Total number of errors encountered during scraping.
+
+Example:
+
+```
+adguard_exporter_up 1
+adguard_exporter_scrape_duration_seconds 0.032
+adguard_exporter_scrape_errors_total 0
+```
 ---
 
 ## License
