@@ -18,6 +18,26 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
+/*
+ 📦 AdGuard Exporter for Prometheus
+ ----------------------------------
+ Author   : @znand-dev
+ License  : MIT
+ Repo     : https://github.com/znand-dev/adguardexporter
+
+ This Go application fetches stats from AdGuard Home via API endpoints
+ and exposes them as Prometheus metrics at `/metrics`.
+
+ Required ENV variables:
+ - ADGUARD_HOST        : AdGuard Home base URL (e.g. http://192.168.1.1:3000)
+ - ADGUARD_USER        : API username (your adguard user)
+ - ADGUARD_PASS        : API password (your adguard pass)
+ - EXPORTER_PORT       : Port to expose metrics (default: 9617)
+ - SCRAPE_INTERVAL     : Interval (in seconds) to fetch new stats (default: 15)
+ - LOG_LEVEL           : Logging level (options: DEBUG, INFO, WARN, ERROR — default: INFO)
+ - GEOIP_DB            : GeoLite2-City.mmdb
+*/
+
 var logLevelMap = map[string]int{"ERROR": 1, "WARN": 2, "INFO": 3, "DEBUG": 4}
 var currentLogLevel = 3
 
@@ -226,6 +246,15 @@ var (
 		},
 		[]string{"client", "country", "lat", "lon"},
 	)
+
+        blockedGeoQueries = prometheus.NewCounterVec(
+                prometheus.CounterOpts{
+                        Name: "adguard_blocked_geo_queries",
+                        Help: "Blocked DNS queries per client with geographic info",
+                },
+                []string{"client", "country", "lat", "lon"},
+        )
+
 )
 
 func init() {
@@ -254,6 +283,7 @@ func init() {
 		queryCountByDomain,
 		queryCountClientReason,
 		clientGeoQueries,
+                blockedGeoQueries,
 	)
 }
 
@@ -307,7 +337,11 @@ func fetchQueryLog() (*AdGuardQueryLog, error) {
 		return nil, err
 	}
 
-	defer resp.Body.Close()
+        defer func() {
+            if err := resp.Body.Close(); err != nil {
+                logX("WARN", "failed to close response body: %v", err)
+            }
+        }()
 
 	body, _ := io.ReadAll(resp.Body)
 
@@ -320,45 +354,56 @@ func fetchQueryLog() (*AdGuardQueryLog, error) {
 
 func updateQueryLogMetrics() {
 
-	logData, err := fetchQueryLog()
+        logData, err := fetchQueryLog()
 
-	if err != nil {
-		logX("ERROR", "Failed querylog: %v", err)
-		return
-	}
+        if err != nil {
+                logX("ERROR", "Failed querylog: %v", err)
+                return
+        }
 
-	for _, q := range logData.Data {
+        for _, q := range logData.Data {
 
-		queryCountByReason.WithLabelValues(q.Reason).Inc()
-		queryCountByType.WithLabelValues(q.Question.Type).Inc()
+                queryCountByReason.WithLabelValues(q.Reason).Inc()
+                queryCountByType.WithLabelValues(q.Question.Type).Inc()
 
-		elapsedMs, err := strconv.ParseFloat(q.Elapsed, 64)
+                elapsedMs, err := strconv.ParseFloat(q.Elapsed, 64)
 
-		if err == nil {
-			queryHistogramByClient.WithLabelValues(q.Client).Observe(elapsedMs)
-		}
+                if err == nil {
+                        queryHistogramByClient.WithLabelValues(q.Client).Observe(elapsedMs)
+                }
 
-		queryCountByUpstream.WithLabelValues(q.Upstream).Inc()
-		queryCountByDomain.WithLabelValues(q.Question.Name).Inc()
-		queryCountClientReason.WithLabelValues(q.Client, q.Reason).Inc()
+                queryCountByUpstream.WithLabelValues(q.Upstream).Inc()
+                queryCountByDomain.WithLabelValues(q.Question.Name).Inc()
+                queryCountClientReason.WithLabelValues(q.Client, q.Reason).Inc()
 
-		geo, ok := resolveGeo(q.Client)
+                geo, ok := resolveGeo(q.Client)
 
-		if ok {
+                if ok {
 
-			clientGeoQueries.WithLabelValues(
-				q.Client,
-				geo.Country,
-				fmt.Sprintf("%f", geo.Lat),
-				fmt.Sprintf("%f", geo.Lon),
-			).Inc()
+                        clientGeoQueries.WithLabelValues(
+                                q.Client,
+                                geo.Country,
+                                fmt.Sprintf("%f", geo.Lat),
+                                fmt.Sprintf("%f", geo.Lon),
+                        ).Inc()
 
-		}
+                        // detect blocked queries
+                        if q.Reason == "FilteredBlackList" ||
+                                q.Reason == "FilteredSafeBrowsing" ||
+                                q.Reason == "FilteredParental" {
 
-	}
+                                blockedGeoQueries.WithLabelValues(
+                                        q.Client,
+                                        geo.Country,
+                                        fmt.Sprintf("%f", geo.Lat),
+                                        fmt.Sprintf("%f", geo.Lon),
+                                ).Inc()
 
-	logX("DEBUG", "Processed %d querylog entries", len(logData.Data))
+                        }
+                }
+        }
 
+        logX("DEBUG", "Processed %d querylog entries", len(logData.Data))
 }
 
 func main() {
