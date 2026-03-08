@@ -116,6 +116,14 @@ type AdGuardQueryLog struct {
 		Client   string        `json:"client"`
 		Elapsed  string        `json:"elapsedMs"`
 		Upstream string        `json:"upstream"`
+
+		ClientInfo struct {
+			Whois struct {
+				Country string `json:"country"`
+				OrgName string `json:"orgname"`
+			} `json:"whois"`
+		} `json:"client_info"`
+
 	} `json:"data"`
 }
 
@@ -321,6 +329,14 @@ var (
 		    Help: "Total number of duplicate queries skipped by deduplication",
 	   },
     )
+
+	queryCountByISP = prometheus.NewCounterVec(
+	    prometheus.CounterOpts{
+		    Name: "adguard_query_isp_total",
+		    Help: "DNS queries grouped by ISP organization",
+	    },
+	    []string{"isp", "country"},
+    )
 )
 
 func init() {
@@ -357,6 +373,7 @@ func init() {
 		exporterQueryCacheSize,
         exporterGeoCacheSize,
         exporterDedupHits,
+		queryCountByISP,
 	)
 }
 
@@ -624,7 +641,8 @@ func updateQueryLogMetrics() {
 	processed := 0
 	skipped := 0
 	geoResolved := 0
-	dedupHits := 0
+	privateClients := 0
+    publicClients := 0
 
 	logData, err := fetchQueryLog()
 
@@ -639,6 +657,7 @@ func updateQueryLogMetrics() {
 
 		scanned++
 
+		// dedup logic
 		key := buildQueryKey(
 			q.Client,
 			q.Question.Name,
@@ -656,7 +675,6 @@ func updateQueryLogMetrics() {
 				queryMutex.Unlock()
 				skipped++
 				exporterDedupHits.Inc()
-				dedupHits++
 				continue
 			}
 		}
@@ -711,6 +729,15 @@ func updateQueryLogMetrics() {
 				).Inc()
 			}
 		}
+
+		isp := q.ClientInfo.Whois.OrgName
+        country := q.ClientInfo.Whois.Country
+
+        if isp != "" {
+	    queryCountByISP.WithLabelValues(isp, country).Inc()
+        
+	    }
+	
 	}
 
 	logX("DEBUG",
@@ -719,7 +746,6 @@ func updateQueryLogMetrics() {
 		processed,
 		skipped,
 		geoResolved,
-		dedupHits,
 	)
 }
 
