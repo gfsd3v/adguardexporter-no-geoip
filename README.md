@@ -6,56 +6,15 @@ A lightweight Prometheus exporter written in Go that exposes detailed metrics fr
 
 ## Features
 
-* Authenticated access to AdGuard Home API
-* Prometheus-compatible metrics exporter
-
-#### DNS Analytics
-
-* Total DNS queries
-* Blocked DNS queries
-* Upstream DNS statistics
-* Per-client query statistics
-* Query reason statistics
-* DNS query latency histograms
-
-#### Query Log Analysis
-
-* Real-time query log processing
-* Query deduplication to prevent metric inflation
-* Query reason and domain tracking
-
-#### GeoIP Enrichment
-
-* GeoIP lookup using MaxMind GeoLite2 database
-* DNS client geographic visualization (Grafana Geomap)
-* DNS threat map for blocked queries
-* GeoIP caching for improved performance
-
-#### ISP Traffic Analytics
-
-* DNS queries grouped by ISP organization
-* Country-level DNS traffic insights
-* ISP-based DNS traffic monitoring
-
-#### Exporter Self-Monitoring
-
-* Query deduplication cache size monitoring
-* GeoIP cache usage monitoring
-* Deduplication hit counters
-* Exporter scrape performance metrics
-
-#### Supported AdGuard API Endpoints
-
-* `/control/status`
-* `/control/stats`
-* `/control/querylog`
-
-#### Deployment
-
-* Customizable scrape interval
-* Lightweight single binary
-* Docker-friendly deployment
-
+| Category | Capabilities |
+|----------|--------------|
+| API Integration | • Authenticated access to AdGuard Home API<br>• Supports `/control/status`, `/control/stats`, and `/control/querylog` endpoints |
+| DNS Analytics | • Total DNS queries metrics<br>• Blocked DNS queries tracking<br>• Upstream DNS statistics<br>• Per-client query statistics<br>• Query reason statistics<br>• DNS upstream latency histograms |
+| Query Log Processing | • Real-time query log analysis<br>• Query deduplication to prevent metric inflation<br>• Domain and query reason tracking |
+| GeoIP Enrichment | • MaxMind GeoLite2 IP geolocation lookup<br>• DNS client geographic visualization (Grafana Geomap)<br>• DNS threat map for blocked queries<br>• GeoIP caching for improved performance |
+| Traffic Analytics | • DNS queries grouped by ISP organization<br>• Country-level DNS traffic insights<br>• ISP-based DNS traffic monitoring |
+| Exporter Monitoring | • Deduplication cache metrics<br>• GeoIP cache usage monitoring<br>• Deduplication hit counters<br>• Exporter scrape performance metrics |
+| Deployment | • Customizable scrape interval<br>• Lightweight single binary deployment<br>• Docker-friendly deployment |
 ---
 
 ## Built With
@@ -111,8 +70,7 @@ After that, you should got the output like this:
 ## Environment Variables
 
 | Variable         | Description                            | Required | Example                      |
-|------------------|----------------------------------------|----------|------------------------------|
-| `ADGUARD_HOST`     | URL to your AdGuard Home API          | ✅       | `http://192.168.1.1:3000`    |
+|------------------|----------------------------   | `http://192.168.1.1:3000`    |
 | `ADGUARD_USER`| AdGuard Home username                 | ✅       | `admin`                      |
 | `ADGUARD_PASS`| AdGuard Home password                 | ✅       | `secretpassword`             |
 | `EXPORTER_PORT`   | Port to expose metrics (default: 9617) | ❌       | `9200`                       |
