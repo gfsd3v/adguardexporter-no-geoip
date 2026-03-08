@@ -637,12 +637,12 @@ func updateStatusMetrics() {
 
 func updateQueryLogMetrics() {
 
-	geoResolved := 0
+	scanned := 0
 	processed := 0
 	skipped := 0
 	geoResolved := 0
 	privateClients := 0
-    publicClients := 0
+        publicClients := 0
 
 	logData, err := fetchQueryLog()
 
@@ -654,10 +654,19 @@ func updateQueryLogMetrics() {
 	for _, q := range logData.Data {
 
 		scanned++
+               
+                ip := net.ParseIP(q.Client)
 
-		scanned++
-
-		// dedup logic
+                if ip != nil {
+	            if ip.IsPrivate() || ip.IsLoopback() {
+		        privateClients++
+	            } else {
+		        publicClients++
+	            }
+                
+                }
+		
+                // dedup logic
 		key := buildQueryKey(
 			q.Client,
 			q.Question.Name,
@@ -682,8 +691,6 @@ func updateQueryLogMetrics() {
 		querySeen[key] = now
 		queryMutex.Unlock()
 		
-		processed++
-
 		processed++
 
 		queryCountByReason.WithLabelValues(q.Reason).Inc()
@@ -746,6 +753,7 @@ func updateQueryLogMetrics() {
 		processed,
 		skipped,
 		geoResolved,
+                dedupHits,
 	)
 }
 
