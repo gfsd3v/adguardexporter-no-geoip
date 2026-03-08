@@ -78,6 +78,7 @@ var (
 	queryMutex  sync.Mutex
 	queryTTL    = int64(300) // 5 menit
 	geoTTL      = int64(86400) // 24 jam
+	dedupHits   int64
 )
 
 type AdGuardStats struct {
@@ -299,6 +300,27 @@ var (
 		    Help: "Total exporter errors",
 	   },
     )
+
+	exporterQueryCacheSize = prometheus.NewGauge(
+	    prometheus.GaugeOpts{
+		    Name: "adguard_exporter_query_cache_size",
+		    Help: "Current number of entries in query deduplication cache",
+	    },
+    )
+
+    exporterGeoCacheSize = prometheus.NewGauge(
+	    prometheus.GaugeOpts{
+		    Name: "adguard_exporter_geo_cache_size",
+		    Help: "Current number of cached GeoIP entries",
+	    },
+    )
+
+    exporterDedupHits = prometheus.NewCounter(
+	    prometheus.CounterOpts{
+		    Name: "adguard_exporter_dedup_hits_total",
+		    Help: "Total number of duplicate queries skipped by deduplication",
+	   },
+    )
 )
 
 func init() {
@@ -332,6 +354,9 @@ func init() {
         exporterScrapeDuration,
         exporterErrors,
 		upstreamLatencyHistogram,
+		exporterQueryCacheSize,
+        exporterGeoCacheSize,
+        exporterDedupHits,
 	)
 }
 
@@ -599,6 +624,9 @@ func updateQueryLogMetrics() {
     processed := 0
     skipped := 0
 	geoResolved := 0
+	processed := 0
+	skipped := 0
+	dedupHits := 0
 
 	logData, err := fetchQueryLog()
 
@@ -629,6 +657,8 @@ func updateQueryLogMetrics() {
 			if now-ts < queryTTL {
 				queryMutex.Unlock()
 				skipped++
+				exporterDedupHits.Inc()
+				dedupHits++
 				continue
 			}
 
@@ -639,6 +669,8 @@ func updateQueryLogMetrics() {
 		
 		processed++
 
+		processed++
+		
 		queryCountByReason.WithLabelValues(q.Reason).Inc()
 		queryCountByType.WithLabelValues(q.Question.Type).Inc()
 
@@ -672,8 +704,8 @@ func updateQueryLogMetrics() {
 			).Inc()
 
 			if q.Reason == "FilteredBlackList" ||
-				q.Reason == "FilteredSafeBrowsing" ||
-				q.Reason == "FilteredParental" {
+			   q.Reason == "FilteredSafeBrowsing" ||
+			   q.Reason == "FilteredParental" {
 
 				blockedGeoQueries.WithLabelValues(
 					q.Client,
@@ -686,14 +718,13 @@ func updateQueryLogMetrics() {
 		}
 	}
 
-	logX(
-		"DEBUG",
-		"Querylog: scanned=%d new=%d skipped=%d geoip=%d",
-		scanned,
-        processed,
-        skipped,
-		geoResolved,
-	)
+	logX("DEBUG",
+	    "Querylog: scanned=%d new=%d skipped=%d geoip=%d",
+	    len(logData.Data),
+	    processed,
+	    skipped,
+	    geoResolved,
+    )
 }
 
 //cleanup memory
@@ -762,6 +793,17 @@ func main() {
 
             exporterScrapeDuration.Set(duration)
             exporterUp.Set(1)
+
+			exporterQueryCacheSize.Set(float64(len(querySeen)))
+            exporterGeoCacheSize.Set(float64(len(geoCache)))
+            
+            logX(
+                "DEBUG",
+                "Exporter caches: query_cache_entries=%d geo_cache_entries=%d dedup_hits_total=%d",
+                len(querySeen),
+                len(geoCache),
+                dedupHits,
+            )
 
 			logX("DEBUG", "Scrape finished in %.3fs", duration)
 
