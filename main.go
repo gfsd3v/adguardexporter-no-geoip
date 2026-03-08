@@ -78,6 +78,7 @@ var (
 	queryMutex  sync.Mutex
 	queryTTL    = int64(300) // 5 menit
 	geoTTL      = int64(86400) // 24 jam
+	dedupHits   int64
 )
 
 type AdGuardStats struct {
@@ -299,6 +300,27 @@ var (
 		    Help: "Total exporter errors",
 	   },
     )
+
+	exporterQueryCacheSize = prometheus.NewGauge(
+	    prometheus.GaugeOpts{
+		    Name: "adguard_exporter_query_cache_size",
+		    Help: "Current number of entries in query deduplication cache",
+	    },
+    )
+
+    exporterGeoCacheSize = prometheus.NewGauge(
+	    prometheus.GaugeOpts{
+		    Name: "adguard_exporter_geo_cache_size",
+		    Help: "Current number of cached GeoIP entries",
+	    },
+    )
+
+    exporterDedupHits = prometheus.NewCounter(
+	    prometheus.CounterOpts{
+		    Name: "adguard_exporter_dedup_hits_total",
+		    Help: "Total number of duplicate queries skipped by deduplication",
+	   },
+    )
 )
 
 func init() {
@@ -332,6 +354,9 @@ func init() {
         exporterScrapeDuration,
         exporterErrors,
 		upstreamLatencyHistogram,
+		exporterQueryCacheSize,
+        exporterGeoCacheSize,
+        exporterDedupHits,
 	)
 }
 
@@ -614,6 +639,12 @@ func updateQueryLogMetrics() {
 
 			if now-ts < queryTTL {
 				queryMutex.Unlock()
+<<<<<<< HEAD
+=======
+				skipped++
+				exporterDedupHits.Inc()
+				dedupHits++
+>>>>>>> f5d184e (feat(exporter): add self-monitoring metrics and improve debug logging)
 				continue
 			}
 
@@ -621,6 +652,11 @@ func updateQueryLogMetrics() {
 
 		querySeen[key] = now
 		queryMutex.Unlock()
+<<<<<<< HEAD
+=======
+
+		processed++
+>>>>>>> f5d184e (feat(exporter): add self-monitoring metrics and improve debug logging)
 
 		queryCountByReason.WithLabelValues(q.Reason).Inc()
 		queryCountByType.WithLabelValues(q.Question.Type).Inc()
@@ -741,6 +777,19 @@ func main() {
 
             exporterScrapeDuration.Set(duration)
             exporterUp.Set(1)
+
+			exporterQueryCacheSize.Set(float64(len(querySeen)))
+            exporterGeoCacheSize.Set(float64(len(geoCache)))
+            
+            logX(
+                "DEBUG",
+                "Exporter caches: query_cache_entries=%d geo_cache_entries=%d dedup_hits_total=%d",
+                len(querySeen),
+                len(geoCache),
+                dedupHits,
+            )
+
+			logX("DEBUG", "Scrape finished in %.3fs", duration)
 
             time.Sleep(time.Duration(interval) * time.Second)
 
