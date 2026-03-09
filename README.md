@@ -80,25 +80,7 @@ After that, you should got the output like this:
 
 ---
 
-## Run via Docker
-
-### Quick Start (Inline ENV)
-
-```bash
-docker run -d \
-  --name adguard_exporter \
-  --restart unless-stopped \
-  -p 9617:9617 \
-  -e ADGUARD_HOST=<YOUR_ADGUARD_URL> \
-  -e ADGUARD_USER=<YOUR_ADGUARD_USERNAME> \
-  -e ADGUARD_PASS=<YOUR_ADGUARD_PASSWORD> \
-  -e EXPORTER_PORT=9617 \
-  -e SCRAPE_INTERVAL=15s \
-  -e LOG_LEVEL=DEBUG
-  ghcr.io/znand-dev/adguardexporter:latest
-```
-
----
+### Quick Start
 
 ## Run via Docker Compose
 
@@ -114,6 +96,8 @@ services:
     restart: unless-stopped
     ports:
       - "9617:9617"
+    volumes:
+      - ./<path/to/your>/GeoLite2-City.mmdb:/GeoLite2-City.mmdb
     environment:
       - ADGUARD_HOST=<YOUR_ADGUARD_URL>
       - ADGUARD_USER=<YOUR_ADGUARD_USERNAME>
